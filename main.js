@@ -21,12 +21,22 @@ class MyTime {
         return new MyTime(timeStr.d, timeStr.m, timeStr.y, timeStr.h, timeStr.mi, timeStr.s)
     }
     static parse2(s) {
-        s = s.replaceAll('  ', '').trim()
-        let info = s.split(' ')
-        let [h, mi] = info[0].split(':')
-        let [d, m, y] = info[1].split('/')
+        if (s == '') {
+            return new MyTime(99, 99, 9999, 99, 99, 99)
+        }
 
-        return new MyTime(d, m, y, h, mi)
+        try {
+            s = s.replaceAll('  ', '').trim()
+            let info = s.split(' ')
+            let [h, mi] = info[0].split(':')
+            let [d, m, y] = info[1].split('/')
+
+            return new MyTime(d, m, y, h, mi)
+        }
+
+        catch {
+            return new MyTime(99, 99, 9999, 99, 99, 99)
+        }
     }
     constructor(d = -1, m = -1, y = -1, h = -1, mi = -1, s = 0) {
         if (d != -1) {
@@ -85,11 +95,14 @@ function jobNode(job) {
     nodeDiv.classList.add('job-wrapper')
 
     jobTimeHtml = ''
-    if (job.startAt.DDMMYY() == job.endAt.DDMMYY()) {
-        jobTimeHtml = `${job.startAt.HHMM()} --> ${job.endAt.HHMM()}`
+    if (job.endAt.DDMMYY() == '99/99/9999') {
+        jobTimeHtml = `${job.startAt.HHMM()}`
+    }
+    else if (job.startAt.DDMMYY() == job.endAt.DDMMYY()) {
+        jobTimeHtml = `${job.startAt.HHMM()} đến ${job.endAt.HHMM()}`
     }
     else {
-        jobTimeHtml = `${job.startAt.HHMM()} ${job.startAt.DDMMYY()} --> ${job.endAt.HHMM()} ${job.endAt.DDMMYY()}`
+        jobTimeHtml = `${job.startAt.HHMM()} ${job.startAt.DDMMYY()} đến ${job.endAt.HHMM()} ${job.endAt.DDMMYY()}`
     }
 
     nodeDiv.innerHTML = `
@@ -242,7 +255,7 @@ document.querySelector('.add-job').onclick = function () {
     let today = new MyTime()
 
     form.querySelector('#job-start').value = `00:00 ${today.DDMMYY()}`
-    form.querySelector('#job-end').value = `00:00 ${today.DDMMYY()}`
+    form.querySelector('#job-end').value = `00:00`
 
     form.querySelector('.add').onclick = function () {
         let jobName = form.querySelector('#job-name').value
@@ -250,7 +263,13 @@ document.querySelector('.add-job').onclick = function () {
         let jobStart = form.querySelector('#job-start').value
         let jobEnd = form.querySelector('#job-end').value
 
-        let newJob = new Job(jobName, MyTime.parse2(jobStart), MyTime.parse2(jobEnd), jobDesc)
+        let startTime = MyTime.parse2(jobStart)
+        if (!jobEnd.includes('/')) {
+            jobEnd = jobEnd.trim() + ' ' + startTime.DDMMYY()
+        }
+        let endTime = MyTime.parse2(jobEnd)
+
+        let newJob = new Job(jobName, startTime, endTime, jobDesc)
         allJobs.push(newJob)
         saveData()
         refreshPage()
