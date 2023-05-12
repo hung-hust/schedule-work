@@ -36,6 +36,7 @@ h1.title {
 .big-title {
     font-size: 25px;
     color: #af87ff;
+    text-align: center;
 }
 
 .main-body {
@@ -46,16 +47,8 @@ h1.title {
     width: 630px;
 }
 
-.title-today-jobs {
-    text-align: center;
-}
-
 .all-jobs {
     width: 630px;
-}
-
-.title-all-jobs {
-    text-align: center;
 }
 
 .add-job {
