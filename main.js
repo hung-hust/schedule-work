@@ -17,6 +17,15 @@ function createNode(innerHTML, tagName = 'div', cl = '') {
 }
 
 class MyTime {
+    static distance(t1, t2) {
+        let date1 = new Date(t1.YYMMDD())
+        let date2 = new Date(t2.YYMMDD())
+
+        let diffInMs = date2 - date1
+        let diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24))
+
+        return diffInDays
+    }
     static parse(timeStr) {
         return new MyTime(timeStr.d, timeStr.m, timeStr.y, timeStr.h, timeStr.mi, timeStr.s)
     }
@@ -66,8 +75,11 @@ class MyTime {
     DDMMYY() {
         return `${formatToString2(this.d)}/${formatToString2(this.m)}/${this.y}`
     }
+    YYMMDD() {
+        return `${this.y}/${formatToString2(this.m)}/${formatToString2(this.d)}`
+    }
     far() {
-        return this.s + this.mi*60 + this.h*3600 + this.d*86400 + this.m*2592000 + (this.y - 2000)*31104000
+        return this.s + this.mi * 60 + this.h * 3600 + this.d * 86400 + this.m * 2592000 + (this.y - 2000) * 31104000
     }
     sameDay(j2) {
         return this.d == j2.d && this.m == j2.m && this.y == j2.y
@@ -194,8 +206,21 @@ function refreshPage() {
 
     allJobs.forEach(job => {
         if (job.startAt.DDMMYY() != currentDDMMYY) {
+            let distance = MyTime.distance(today, job.startAt)
+            let distanceStr
+
+            if (distance == 0) {
+                distanceStr = 'Hôm nay'
+            }
+            else if (distance < 0) {
+                distanceStr = `Đã qua ${-distance} ngày`
+            }
+            else {
+                distanceStr = `Còn ${distance} ngày nữa`
+            }
+
             currentDDMMYY = job.startAt.DDMMYY()
-            list_all_jobs_element.append(createNode(currentDDMMYY, 'p', 'day-seperate'))
+            list_all_jobs_element.append(createNode(currentDDMMYY + ' - ' + distanceStr, 'p', 'day-seperate'))
         }
         list_all_jobs_element.appendChild(jobNode(job))
     })
