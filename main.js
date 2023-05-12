@@ -26,6 +26,18 @@ class MyTime {
 
         return diffInDays
     }
+    static DateToMyTime(time) {
+
+        let newTime = new MyTime()
+        newTime.d = time.getDate()
+        newTime.m = time.getMonth() + 1
+        newTime.y = time.getFullYear()
+        newTime.h = time.getHours()
+        newTime.mi = time.getMinutes()
+        newTime.s = time.getSeconds()
+
+        return newTime
+    }
     static parse(timeStr) {
         return new MyTime(timeStr.d, timeStr.m, timeStr.y, timeStr.h, timeStr.mi, timeStr.s)
     }
@@ -187,8 +199,12 @@ function saveData() {
 
 function refreshPage() {
     let today = new MyTime()
+    let tomorrow = new Date()
+    tomorrow.setDate(tomorrow.getDate() + 1)
+    tomorrow = MyTime.DateToMyTime(tomorrow)
 
     document.querySelector('.title-today-jobs').innerHTML = `Công việc hôm nay (${today.DDMMYY()})`
+    document.querySelector('.title-tomorrow-jobs').innerHTML = `Công việc ngày mai (${tomorrow.DDMMYY()})`
 
     allJobs.sort((j1, j2) => {
         return j2.startAt.far() - j1.startAt.far()
@@ -212,6 +228,12 @@ function refreshPage() {
             if (distance == 0) {
                 distanceStr = 'Hôm nay'
             }
+            else if (distance == 1) {
+                distanceStr = 'Ngày mai'
+            }
+            else if (distance == 2) {
+                distanceStr = 'Ngày kia'
+            }
             else if (distance < 0) {
                 distanceStr = `Đã qua ${-distance} ngày`
             }
@@ -226,9 +248,13 @@ function refreshPage() {
     })
 
     let todayJobs = []
+    let tomorrowJobs = []
     for (let job of allJobs) {
-        if (job.startAt.sameDay(today) || job.startAt.sameDay(today)) {
+        if (job.startAt.sameDay(today) || job.endAt.sameDay(today)) {
             todayJobs.push(job)
+        }
+        if (job.startAt.sameDay(tomorrow) || job.endAt.sameDay(tomorrow)) {
+            tomorrowJobs.push(job)
         }
     }
     todayJobs.sort((j1, j2) => {
@@ -242,6 +268,19 @@ function refreshPage() {
 
     todayJobs.forEach(job => {
         list_today_jobs_element.appendChild(jobNode(job))
+    })
+
+    tomorrowJobs.sort((j1, j2) => {
+        return j1.startAt.far() - j2.startAt.far()
+    })
+
+    let list_tomorrow_jobs_element = document.querySelector('.list-tomorrow-jobs')
+    list_tomorrow_jobs_element.querySelectorAll('.job-wrapper').forEach(node => {
+        node.remove()
+    })
+
+    tomorrowJobs.forEach(job => {
+        list_tomorrow_jobs_element.appendChild(jobNode(job))
     })
 }
 
