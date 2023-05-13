@@ -93,8 +93,17 @@ class MyTime {
     far() {
         return this.s + this.mi * 60 + this.h * 3600 + this.d * 86400 + this.m * 2592000 + (this.y - 2000) * 31104000
     }
+    isBefore(t2) {
+        return this.far() - t2.far() < 0
+    }
     sameDay(j2) {
         return this.d == j2.d && this.m == j2.m && this.y == j2.y
+    }
+    getStartDayTime() {
+        return new MyTime(this.d, this.m, this.y, 0, 0, 0)
+    }
+    getEndDayTime() {
+        return new MyTime(this.d, this.m, this.y, 23, 59, 59)
     }
 }
 
@@ -142,7 +151,7 @@ function jobNode(job) {
         <button class="view-job-detail">Xem chi tiết</button>
     </div>
     <div id="display-none" class="job-description">
-        ${job.description}
+        ${job.description.split('\\n').map(p => `<p>${p}</p>`).join('')}
     </div>
     `
 
@@ -172,6 +181,7 @@ function jobNode(job) {
             nodeDiv.querySelector('.job-description').id = 'display-none'
         }
     }
+    // viewDetailButton.click()
 
     nodeDiv.querySelector('button.delete-job').onclick = function () {
         for (let i = 0; i < allJobs.length; i++) {
@@ -249,11 +259,29 @@ function refreshPage() {
 
     let todayJobs = []
     let tomorrowJobs = []
+
     for (let job of allJobs) {
-        if (job.startAt.sameDay(today) || job.endAt.sameDay(today)) {
-            todayJobs.push(job)
+        if (job.isDone) {
+            continue
         }
-        if (job.startAt.sameDay(tomorrow) || job.endAt.sameDay(tomorrow)) {
+
+        if (job.startAt.isBefore(today.getStartDayTime())) {
+            if (!job.endTime.isBefore(today.getStartDayTime())) {
+                todayJobs.push(job)
+                continue
+            }
+        }
+        else if (job.startAt.isBefore(today.getEndDayTime())) {
+            todayJobs.push(job)
+            continue
+        }
+        
+        if (job.startAt.isBefore(tomorrow.getStartDayTime())) {
+            if (!job.endTime.isBefore(tomorrow.getStartDayTime())) {
+                tomorrowJobs.push(job)
+            }
+        }
+        else if (job.startAt.isBefore(tomorrow.getEndDayTime())) {
             tomorrowJobs.push(job)
         }
     }
