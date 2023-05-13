@@ -138,6 +138,7 @@ function jobNode(job) {
         jobTimeHtml = `${job.startAt.HHMM()} ${job.startAt.DDMMYY()} đến ${job.endAt.HHMM()} ${job.endAt.DDMMYY()}`
     }
 
+    // Có class là delete-job không đúng ngữ nghĩa vì ngại sửa
     nodeDiv.innerHTML = `
     <div class="job-sumary">
         <div class="mark-done ${job.isDone ? 'is-done' : ''}">
@@ -147,11 +148,12 @@ function jobNode(job) {
             <h1 class="job-name">${job.name}</h1>
             <p class="job-time">${jobTimeHtml}</p>
         </div>
-        <button class="delete-job">Xóa</button>
+        <button class="delete-job">Chỉnh sửa</button>
         <button class="view-job-detail">Xem chi tiết</button>
     </div>
     <div id="display-none" class="job-description">
         ${job.description.split('\\n').map(p => `<p>${p}</p>`).join('')}
+        <b>Ngày tạo: ${job.createdAt.toString()}</b>
     </div>
     `
 
@@ -184,20 +186,21 @@ function jobNode(job) {
     // viewDetailButton.click()
 
     nodeDiv.querySelector('button.delete-job').onclick = function () {
-        for (let i = 0; i < allJobs.length; i++) {
-            if (allJobs[i].id == job.id) {
-                allJobs.splice(i, 1)
-                saveData()
-                refreshPage()
-                break
-            }
-        }
+        displayAddJobForm(job)
     }
 
     return nodeDiv
 }
 
 let allJobs = []
+
+function findJobIndex(jobId) {
+    for (let i in allJobs) {
+        if (allJobs[i].id == jobId) {
+            return i
+        }
+    }
+}
 
 allJobs = JSON.parse(localStorage.getItem('jobs-str') || '[]').map(job_str => {
     return Job.parse(job_str)
@@ -275,7 +278,7 @@ function refreshPage() {
             todayJobs.push(job)
             continue
         }
-        
+
         if (job.startAt.isBefore(tomorrow.getStartDayTime())) {
             if (!job.endTime.isBefore(tomorrow.getStartDayTime())) {
                 tomorrowJobs.push(job)
@@ -314,9 +317,11 @@ function refreshPage() {
 
 refreshPage()
 
-document.querySelector('.add-job').onclick = function () {
-    let __this = this
+function displayAddJobForm(job) {
+    let __this = addJobButton
     __this.id = 'display-none'
+
+    document.querySelectorAll('.add-job-form').forEach(node => node.remove())
 
     let form = createNode('', 'div', 'add-job-form')
     form.innerHTML = `
@@ -337,10 +342,10 @@ document.querySelector('.add-job').onclick = function () {
             <input type="text" name="" id="job-end">
         </div>
         <button class="add">
-            Thêm
+            ${job ? 'Lưu lại' : 'Thêm'}
         </button>
         <button class="back">
-            Quay lại
+        ${job ? 'Xóa công việc' : 'Quay lại'}
         </button>
     `
 
@@ -349,20 +354,37 @@ document.querySelector('.add-job').onclick = function () {
     form.querySelector('#job-start').value = `00:00 ${today.DDMMYY()}`
     form.querySelector('#job-end').value = `00:00`
 
+    if (job) {
+        form.querySelector('#job-name').value = job.name
+        form.querySelector('#job-desc').value = job.description
+        form.querySelector('#job-start').value = job.startAt.toString()
+        form.querySelector('#job-end').value = job.endAt.DDMMYY() != '99/99/9999' ? job.endAt.toString() : ''
+    }
+
     form.querySelector('.add').onclick = function () {
         let jobName = form.querySelector('#job-name').value
         let jobDesc = form.querySelector('#job-desc').value
         let jobStart = form.querySelector('#job-start').value
         let jobEnd = form.querySelector('#job-end').value
 
-        let startTime = MyTime.parse2(jobStart)
-        if (!jobEnd.includes('/')) {
-            jobEnd = jobEnd.trim() + ' ' + startTime.DDMMYY()
+        if (job) {
+            job.name = jobName
+            job.description = jobDesc
+            job.startAt = MyTime.parse2(jobStart)
+            job.endAt = MyTime.parse2(jobEnd)
         }
-        let endTime = MyTime.parse2(jobEnd)
 
-        let newJob = new Job(jobName, startTime, endTime, jobDesc)
-        allJobs.push(newJob)
+        else {
+            let startTime = MyTime.parse2(jobStart)
+            if (!jobEnd.includes('/')) {
+                jobEnd = jobEnd.trim() + ' ' + startTime.DDMMYY()
+            }
+            let endTime = MyTime.parse2(jobEnd)
+
+            let newJob = new Job(jobName, startTime, endTime, jobDesc)
+            allJobs.push(newJob)
+        }
+
         saveData()
         refreshPage()
         form.remove()
@@ -370,10 +392,25 @@ document.querySelector('.add-job').onclick = function () {
     }
 
     form.querySelector('.back').onclick = function () {
+        if (job) {
+            allJobs.splice(findJobIndex(job.id), 1)
+            saveData()
+            refreshPage()
+        }
+
         form.remove()
         __this.id = ''
     }
 
-    document.querySelector('.all-jobs').insertBefore(form, __this)
+    if (job) {
+        document.querySelector('.all-jobs').insertBefore(form, __this)
+    }
+    else {
+        document.querySelector('.all-jobs').insertBefore(form, __this)
+    }
 }
 
+let addJobButton = document.querySelector('.add-job')
+addJobButton.onclick = function () {
+    displayAddJobForm()
+}
