@@ -269,7 +269,7 @@ function refreshPage() {
         }
 
         if (job.startAt.isBefore(today.getStartDayTime())) {
-            if (!job.endTime.isBefore(today.getStartDayTime())) {
+            if (!job.endAt.isBefore(today.getStartDayTime())) {
                 todayJobs.push(job)
                 continue
             }
@@ -280,7 +280,7 @@ function refreshPage() {
         }
 
         if (job.startAt.isBefore(tomorrow.getStartDayTime())) {
-            if (!job.endTime.isBefore(tomorrow.getStartDayTime())) {
+            if (!job.endAt.isBefore(tomorrow.getStartDayTime())) {
                 tomorrowJobs.push(job)
             }
         }
