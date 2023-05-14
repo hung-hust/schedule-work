@@ -10,8 +10,10 @@
 }
 
 button {
-    padding: 3px;
+    padding: 3px 20px;
     min-width: 112px;
+    background-color: blanchedalmond;
+    border-radius: 4px;
 }
 
 button:hover {
@@ -89,6 +91,11 @@ h1.title {
     background-color: #cbe7ff;
     padding: 5px;
     border-radius: 6px;
+}
+
+.view-more-jobs {
+    margin-top: 20px;
+    margin-bottom: 100px;
 }
 
 .job-wrapper {
