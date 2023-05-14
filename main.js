@@ -84,6 +84,9 @@ class MyTime {
     HHMM() {
         return `${formatToString2(this.h)}h${formatToString2(this.mi)}p`
     }
+    HHMM2() {
+        return `${formatToString2(this.h)}:${formatToString2(this.mi)}`
+    }
     DDMMYY() {
         return `${formatToString2(this.d)}/${formatToString2(this.m)}/${this.y}`
     }
@@ -186,7 +189,7 @@ function jobNode(job) {
     // viewDetailButton.click()
 
     nodeDiv.querySelector('button.delete-job').onclick = function () {
-        displayAddJobForm(job)
+        displayAddJobForm(job, nodeDiv)
     }
 
     return nodeDiv
@@ -218,6 +221,7 @@ function refreshPage() {
 
     document.querySelector('.title-today-jobs').innerHTML = `Công việc hôm nay (${today.DDMMYY()})`
     document.querySelector('.title-tomorrow-jobs').innerHTML = `Công việc ngày mai (${tomorrow.DDMMYY()})`
+    document.querySelectorAll('.edit-job-from').forEach(node => node.remove())
 
     allJobs.sort((j1, j2) => {
         return j2.startAt.far() - j1.startAt.far()
@@ -317,13 +321,18 @@ function refreshPage() {
 
 refreshPage()
 
-function displayAddJobForm(job) {
+function displayAddJobForm(job, nodeDiv) {
     let __this = addJobButton
-    __this.id = 'display-none'
+    if (!job) {
+        __this.id = 'display-none'
+    }
 
-    document.querySelectorAll('.add-job-form').forEach(node => node.remove())
+    // document.querySelectorAll('.add-job-form').forEach(node => node.remove())
 
     let form = createNode('', 'div', 'add-job-form')
+    if (job) {
+        form.classList.add('edit-job-from')
+    }
     form.innerHTML = `
         <div class="form-cate">
             <label for="">Tên</label>
@@ -345,7 +354,7 @@ function displayAddJobForm(job) {
             ${job ? 'Lưu lại' : 'Thêm'}
         </button>
         <button class="back">
-        ${job ? 'Xóa công việc' : 'Quay lại'}
+        ${job ? 'Ấn 4 lần để xóa công việc' : 'Quay lại'}
         </button>
     `
 
@@ -355,10 +364,12 @@ function displayAddJobForm(job) {
     form.querySelector('#job-end').value = `00:00`
 
     if (job) {
+        nodeDiv.id = 'display-none'
+
         form.querySelector('#job-name').value = job.name
         form.querySelector('#job-desc').value = job.description
-        form.querySelector('#job-start').value = job.startAt.toString()
-        form.querySelector('#job-end').value = job.endAt.DDMMYY() != '99/99/9999' ? job.endAt.toString() : ''
+        form.querySelector('#job-start').value = `${job.startAt.HHMM2()} ${job.startAt.DDMMYY()}`
+        form.querySelector('#job-end').value = job.endAt.DDMMYY() != '99/99/9999' ? `${job.endAt.HHMM2()} ${job.endAt.DDMMYY()}` : ''
     }
 
     form.querySelector('.add').onclick = function () {
@@ -366,6 +377,19 @@ function displayAddJobForm(job) {
         let jobDesc = form.querySelector('#job-desc').value
         let jobStart = form.querySelector('#job-start').value
         let jobEnd = form.querySelector('#job-end').value
+
+        let job_changed = true
+        if (job) {
+            let b1 = job.name == jobName
+            let b2 = job.description == jobDesc
+            let b3 = job.startAt.toString() == MyTime.parse2(jobStart).toString()
+            let b4 = job.endAt.toString() == MyTime.parse2(jobEnd).toString()
+
+            if (b1 && b2 && b3 && b4) {
+                job_changed = false
+                nodeDiv.id = ''
+            }
+        }
 
         if (job) {
             job.name = jobName
@@ -385,25 +409,37 @@ function displayAddJobForm(job) {
             allJobs.push(newJob)
         }
 
-        saveData()
-        refreshPage()
+        if (job_changed) {
+            saveData()
+            refreshPage()
+        }
         form.remove()
-        __this.id = ''
+        if (!job) {
+            __this.id = ''
+        }
     }
+
+    let countForDelete = 0
 
     form.querySelector('.back').onclick = function () {
         if (job) {
+            countForDelete += 1
+            if (countForDelete < 4) {
+                return
+            }
             allJobs.splice(findJobIndex(job.id), 1)
             saveData()
             refreshPage()
         }
 
         form.remove()
-        __this.id = ''
+        if (!job) {
+            __this.id = ''
+        }
     }
 
     if (job) {
-        document.querySelector('.all-jobs').insertBefore(form, __this)
+        nodeDiv.parentNode.insertBefore(form, nodeDiv.nextSibling)
     }
     else {
         document.querySelector('.all-jobs').insertBefore(form, __this)
