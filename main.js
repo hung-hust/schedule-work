@@ -211,6 +211,8 @@ allJobs = JSON.parse(localStorage.getItem('jobs-str') || '[]').map(job_str => {
     return Job.parse(job_str)
 })
 
+let numJobsPerTime = 10
+
 function saveData() {
     localStorage.setItem('jobs-str', JSON.stringify(allJobs))
 }
@@ -224,6 +226,7 @@ function refreshPage() {
     document.querySelector('.title-today-jobs').innerHTML = `Công việc hôm nay (${today.DDMMYY()})`
     document.querySelector('.title-tomorrow-jobs').innerHTML = `Công việc ngày mai (${tomorrow.DDMMYY()})`
     document.querySelectorAll('.edit-job-from').forEach(node => node.remove())
+    document.querySelectorAll('.view-more-jobs').forEach(node => node.remove())
 
     allJobs.sort((j1, j2) => {
         return j2.startAt.far() - j1.startAt.far()
@@ -239,7 +242,16 @@ function refreshPage() {
 
     let currentDDMMYY = ''
 
+    let count = 0
+    let beLimited = false
     allJobs.forEach(job => {
+        if (count > numJobsPerTime) {
+            if (job.startAt.DDMMYY() != currentDDMMYY) {
+                beLimited = true
+                return
+            }
+        }
+
         if (job.startAt.DDMMYY() != currentDDMMYY) {
             let distance = MyTime.distance(today, job.startAt)
             let distanceStr
@@ -248,10 +260,10 @@ function refreshPage() {
                 distanceStr = 'Hôm nay'
             }
             else if (distance == 1) {
-                distanceStr = 'Ngày mai'
+                distanceStr = 'Ngày mai (Còn 1 ngày nữa)'
             }
             else if (distance == 2) {
-                distanceStr = 'Ngày kia'
+                distanceStr = 'Ngày kia (Còn 2 ngày nữa)'
             }
             else if (distance < 0) {
                 distanceStr = `Đã qua ${-distance} ngày`
@@ -264,7 +276,21 @@ function refreshPage() {
             list_all_jobs_element.append(createNode(currentDDMMYY + ' - ' + distanceStr, 'p', 'day-seperate'))
         }
         list_all_jobs_element.appendChild(jobNode(job))
+        count += 1
     })
+
+    if (beLimited) {
+        let displayMoreJobsButton = createNode('Xem của những ngày cũ hơn', 'button', 'view-more-jobs')
+        displayMoreJobsButton.onclick = function () {
+            let temp = numJobsPerTime
+            numJobsPerTime = 1000000000
+            this.remove()
+            refreshPage()
+            numJobsPerTime = temp
+        }
+
+        list_all_jobs_element.append(displayMoreJobsButton)
+    }
 
     let todayJobs = []
     let tomorrowJobs = []
@@ -453,4 +479,4 @@ addJobButton.onclick = function () {
     displayAddJobForm()
 }
 
-document.querySelector('h1.title').innerText = 'Lập kế hoạch (Last update: 23h31 14/5/2023)'
+document.querySelector('h1.title').innerText = 'Lập kế hoạch (Last update: 23h54 14/5/2023)'
