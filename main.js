@@ -211,7 +211,7 @@ allJobs = JSON.parse(localStorage.getItem('jobs-str') || '[]').map(job_str => {
     return Job.parse(job_str)
 })
 
-let numJobsPerTime = 10
+let numJobsPerTime = 30
 
 function saveData() {
     localStorage.setItem('jobs-str', JSON.stringify(allJobs))
