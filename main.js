@@ -145,7 +145,7 @@ function jobNode(job) {
     nodeDiv.innerHTML = `
     <div class="job-sumary">
         <div class="mark-done ${job.isDone ? 'is-done' : ''}">
-            <div class="icon"></div>
+            <div class="icon" title="${job.isDone ? 'Đánh dấu là chưa làm' : 'Đánh dấu là đã làm xong'}"></div>
         </div>
         <div class="job-title">
             <h1 class="job-name">${job.name}</h1>
@@ -163,12 +163,14 @@ function jobNode(job) {
     nodeDiv.querySelector('.icon').onclick = function () {
         if (job.isDone) {
             job.isDone = false
+            this.title = 'Đánh dấu là đã làm xong'
             nodeDiv.querySelector('.mark-done').classList.remove('is-done')
             saveData()
             refreshPage()
         }
         else {
             job.isDone = true
+            this.title = 'Đánh dấu là chưa làm'
             nodeDiv.querySelector('.mark-done').classList.add('is-done')
             saveData()
             refreshPage()
@@ -377,13 +379,19 @@ function displayAddJobForm(job, nodeDiv) {
         let jobDesc = form.querySelector('#job-desc').value
         let jobStart = form.querySelector('#job-start').value
         let jobEnd = form.querySelector('#job-end').value
+        
+        let startTime = MyTime.parse2(jobStart)
+        if (!jobEnd.includes('/')) {
+            jobEnd = jobEnd.trim() + ' ' + startTime.DDMMYY()
+        }
+        let endTime = MyTime.parse2(jobEnd)
 
         let job_changed = true
         if (job) {
             let b1 = job.name == jobName
             let b2 = job.description == jobDesc
-            let b3 = job.startAt.toString() == MyTime.parse2(jobStart).toString()
-            let b4 = job.endAt.toString() == MyTime.parse2(jobEnd).toString()
+            let b3 = job.startAt.toString() == startTime.toString()
+            let b4 = job.endAt.toString() == endTime.toString()
 
             if (b1 && b2 && b3 && b4) {
                 job_changed = false
@@ -394,17 +402,11 @@ function displayAddJobForm(job, nodeDiv) {
         if (job) {
             job.name = jobName
             job.description = jobDesc
-            job.startAt = MyTime.parse2(jobStart)
-            job.endAt = MyTime.parse2(jobEnd)
+            job.startAt = startTime
+            job.endAt = endTime
         }
 
         else {
-            let startTime = MyTime.parse2(jobStart)
-            if (!jobEnd.includes('/')) {
-                jobEnd = jobEnd.trim() + ' ' + startTime.DDMMYY()
-            }
-            let endTime = MyTime.parse2(jobEnd)
-
             let newJob = new Job(jobName, startTime, endTime, jobDesc)
             allJobs.push(newJob)
         }
@@ -450,3 +452,5 @@ let addJobButton = document.querySelector('.add-job')
 addJobButton.onclick = function () {
     displayAddJobForm()
 }
+
+document.querySelector('h1.title').innerText = 'Lập kế hoạch (Last update: 23h31 14/5/2023)'
