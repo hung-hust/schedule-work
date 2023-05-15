@@ -384,6 +384,7 @@ function displayAddJobForm(job, nodeDiv) {
         <button class="back">
         ${job ? 'Ấn 4 lần để xóa công việc' : 'Quay lại'}
         </button>
+        ${job ? '<button class="make-copy">Tạo bản sao</button>' : ''}
     `
 
     let today = new MyTime()
@@ -444,6 +445,29 @@ function displayAddJobForm(job, nodeDiv) {
         form.remove()
         if (!job) {
             __this.id = ''
+        }
+    }
+
+    if (job) {
+        form.querySelector('.make-copy').onclick = function () {
+            let jobName = form.querySelector('#job-name').value
+            let jobDesc = form.querySelector('#job-desc').value
+            let jobStart = form.querySelector('#job-start').value
+            let jobEnd = form.querySelector('#job-end').value
+            
+            let startTime = MyTime.parse2(jobStart)
+            if (!jobEnd.includes('/')) {
+                jobEnd = jobEnd.trim() + ' ' + startTime.DDMMYY()
+            }
+            let endTime = MyTime.parse2(jobEnd)
+
+            let newJob = new Job(jobName, startTime, endTime, jobDesc)
+            allJobs.push(newJob)
+
+            saveData()
+            refreshPage()
+
+            form.remove()
         }
     }
 
