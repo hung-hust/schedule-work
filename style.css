@@ -10,7 +10,7 @@
 }
 
 button {
-    padding: 3px 20px;
+    padding: 3px 16px;
     min-width: 112px;
     background-color: blanchedalmond;
     border-radius: 4px;
@@ -124,8 +124,9 @@ h1.title {
     position: absolute;
     top: 50%;
     left: 50%;
-    transform: translate(-50%, -50%);
+    transform: translate(calc(-50% - 13px), -50%);
     cursor: pointer;
+    border-radius: 29px;
 }
 
 .mark-done.is-done .icon {
