@@ -106,6 +106,10 @@ h1.title {
     border-radius: 12px;
 }
 
+.job-wrapper:hover {
+    background-color: #fff4e1;
+}
+
 .job-sumary {
     display: flex;
     position: relative;
@@ -124,13 +128,21 @@ h1.title {
     position: absolute;
     top: 50%;
     left: 50%;
-    transform: translate(calc(-50% - 13px), -50%);
+    transform: translate(calc(-50% - 10px), -50%);
     cursor: pointer;
     border-radius: 29px;
 }
 
+.mark-done .icon:hover {
+    
+}
+
 .mark-done.is-done .icon {
     background-color: #06e649;
+}
+
+.mark-done.is-done .icon:hover {
+    
 }
 
 .job-title {
