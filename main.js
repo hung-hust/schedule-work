@@ -503,4 +503,4 @@ addJobButton.onclick = function () {
     displayAddJobForm()
 }
 
-document.querySelector('h1.title').innerText = 'Lập kế hoạch (Last update: 23h54 14/5/2023)'
+document.querySelector('h1.title').innerText = 'Lập kế hoạch (Last update: 13h07 15/5/2023)'
