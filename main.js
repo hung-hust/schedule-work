@@ -94,7 +94,7 @@ class MyTime {
         return `${this.y}/${formatToString2(this.m)}/${formatToString2(this.d)}`
     }
     far() {
-        return this.s + this.mi * 60 + this.h * 3600 + this.d * 86400 + this.m * 2592000 + (this.y - 2000) * 31104000
+        return new Date(this.y, this.m - 1, this.d, this.h, this.mi, this.s) - new Date(200, 0, 1, 0, 0, 0)
     }
     isBefore(t2) {
         return this.far() - t2.far() < 0
@@ -231,6 +231,7 @@ function refreshPage() {
     allJobs.sort((j1, j2) => {
         return j2.startAt.far() - j1.startAt.far()
     })
+    console.log(allJobs)
 
     let list_all_jobs_element = document.querySelector('.list-all-jobs')
     list_all_jobs_element.querySelectorAll('.job-wrapper').forEach(node => {
@@ -275,6 +276,7 @@ function refreshPage() {
             currentDDMMYY = job.startAt.DDMMYY()
             list_all_jobs_element.append(createNode(currentDDMMYY + ' - ' + distanceStr, 'p', 'day-seperate'))
         }
+
         list_all_jobs_element.appendChild(jobNode(job))
         count += 1
     })
